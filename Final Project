@@ -1,0 +1,54 @@
+# استيراد المكتبات اللازمة
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+# تحميل مجموعة بيانات Samsung HAR
+url = "https://archive.ics.uci.edu/ml/machine-learning-databases/00240/UCI%20HAR%20Dataset.zip"
+!wget $url
+!unzip "UCI HAR Dataset.zip"
+
+# تحميل ملف الميتاداتا
+features = pd.read_csv('UCI HAR Dataset/features.txt', sep='\s+', header=None,
+                       names=['feature_id', 'feature_name'])
+
+# تحميل ملف التدريب
+X_train = pd.read_csv('UCI HAR Dataset/train/X_train.txt', sep='\s+', header=None)
+y_train = pd.read_csv('UCI HAR Dataset/train/y_train.txt', sep='\s+', header=None,
+                      names=['activity'])
+
+# تحميل ملف الاختبار
+X_test = pd.read_csv('UCI HAR Dataset/test/X_test.txt', sep='\s+', header=None)
+y_test = pd.read_csv('UCI HAR Dataset/test/y_test.txt', sep='\s+', header=None,
+                     names=['activity'])
+
+# إجراء EDA
+sns.countplot(y_train['activity'])
+plt.title('Distribution of Activities in Training Set')
+plt.show()
+
+sns.countplot(y_test['activity'])
+plt.title('Distribution of Activities in Testing Set')
+plt.show()
+
+plt.figure(figsize=(16, 6))
+sns.heatmap(X_train.describe()[1:].transpose(),
+            annot=True, linecolor='w', linewidths=1, cmap='magma')
+plt.title("Data Summary")
+plt.show()
+
+# تهيئة النموذج
+model = DecisionTreeClassifier(random_state=42)
+
+# تدريب النموذج وقياس دقته
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy*100:.2f}%")
+
+# إظهار تقرير الأداء
+print(classification_report(y_test, y_pred))
